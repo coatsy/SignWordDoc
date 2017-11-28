@@ -1,0 +1,23 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 9.00
+# Visual Studio 2005
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "docsign", "docsign.csproj", "{C4272C23-96A3-47D5-829A-57D075E11064}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+		Reprobug|Any CPU = Reprobug|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C4272C23-96A3-47D5-829A-57D075E11064}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C4272C23-96A3-47D5-829A-57D075E11064}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C4272C23-96A3-47D5-829A-57D075E11064}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C4272C23-96A3-47D5-829A-57D075E11064}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C4272C23-96A3-47D5-829A-57D075E11064}.Reprobug|Any CPU.ActiveCfg = Reprobug|Any CPU
+		{C4272C23-96A3-47D5-829A-57D075E11064}.Reprobug|Any CPU.Build.0 = Reprobug|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
