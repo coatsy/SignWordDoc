@@ -19,13 +19,13 @@ Here's the general process the sample uses:
 ![Architecture Diagram](/images/architecture.svg)
 
 * After some basic parameter checking, the template document is merged with the data for this instance to create the document.
-* The Contents of the document are collected and a has calculated with using the X509 certificate. This hash (and some other info) is stored in the document - this is the digital signature.
+* The Contents of the document are collected and a hash calculated with using the X509 certificate. This hash (and some other info) is stored in the document - this is the digital signature.
 * The signed file is written out to disk.
 
 ## More Details
 
 ### Merging the data with the template document
-There are a number of approaches I've used to do programmatic merging of data with an existing template, but I've gone with one based on Content Controls.
+There are a number of approaches I've used in the past to do programmatic merging of data with an existing template. This time I've gone with one based on Content Controls.
 
 The template document has the basic structure of the output required and wherever data needs to be inserted, I've added a content control with a well known name.
 
@@ -57,7 +57,7 @@ control.Remove();
 // now add the text as a child of the parent (replacing the content control)
 parent.AppendChild<Run>(new Run(new Text(newText)));
 ```
-Doing this with whole paragraphs is a bit more involved, because there's not an easy way to add a bunch of elements in the right place in the document. The approach I took was to find the content control, and add the element before the control, then rempoe the control:
+Doing this with whole paragraphs is a bit more involved, because there's not an easy way to add a bunch of elements in the right place in the document. The approach I took was to find the content control, and add the element before the control, then remove the control:
 ```csharp
 /// <summary>
 /// Finds a content control and replaces it with the OpenXML Part passed in
@@ -81,3 +81,18 @@ private static void ReplaceContentControlOpenXML(WordprocessingDocument doc, str
 ```
 
 ### Signing the merged document
+To sign the document, you need a certificate and you need to use the Open Packaging Convention's facility for storing a hash based on the certificate. Wouter van Vugt did a great post about this 10 years ago and it still works great. I've linked to all the details in the [XmlSign/readme.md](/XmlSign/readme.md).
+
+I've also included a certificate I generated and used for testing, as well as a batch file you can modify to generate your own. There's a good explanation of [using the MakeCert tool](https://blog.jayway.com/2014/09/03/creating-self-signed-certificates-with-makecert-exe-for-development/#comments) from [Elizabeth Andrews](https://blog.jayway.com/author/elizabethandrews/) which I used to craft the cmd file.
+
+### Untrusted Certificates are Untrusted
+Of course, if you generate your own certificate, Word has no way to validate it. When you open the signed document, you'll see it's signed, but that the cert isn't validated:
+![The certificate is untrusted and couldn't be validated](/images/UntrustedCert1.png)
+![The certificate is untrusted and couldn't be validated](/images/UntrustedCert2.png)
+![The certificate is untrusted and couldn't be validated](/images/UntrustedCert3.png)
+
+If you Click the link to trust the user's identity, then all will be well:
+
+![The certificate is trusted and could be validated](/images/TrustedCert1.png)
+![The certificate is trusted and could be validated](/images/TrustedCert2.png)
+![The certificate is trusted and could be validated](/images/TrustedCert3.png)
