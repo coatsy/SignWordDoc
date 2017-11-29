@@ -27,21 +27,7 @@ Here's the general process the sample uses:
 ### Merging the data with the template document
 There are a number of approaches I've used to do programmatic merging of data with an existing template, but I've gone with one based on Content Controls.
 
-To sign the document, you need a certificate and you need to use the Open Packaging Convention's facility for storing a hash based on the certificate. Wouter van Vugt did a great post about this 10 years ago and it still works great. I've linked to all the details in the [XmlSign/readme.md](/XmlSign/readme.md).
-
-I've also included a certificate I generated and used for testing, as well as a batch file you can modify to generate your own. There's a good explanation of [using the MakeCert tool](https://blog.jayway.com/2014/09/03/creating-self-signed-certificates-with-makecert-exe-for-development/#comments) from [Elizabeth Andrews](https://blog.jayway.com/author/elizabethandrews/) which I used to craft the cmd file.
-
-### Untrusted Certificates are Untrusted
-Of course, if you generate your own certificate, Word has no way to validate it. When you open the signed document, you'll see it's signed, but that the cert isn't validated:
-![The certificate is untrusted and couldn't be validated](/images/UntrustedCert1.png)
-![The certificate is untrusted and couldn't be validated](/images/UntrustedCert2.png)
-![The certificate is untrusted and couldn't be validated](/images/UntrustedCert3.png)
-
-If you Click the link to trust the user's identity, then all will be well:
-
-![The certificate is trusted and could be validated](/images/TrustedCert1.png)
-![The certificate is trusted and could be validated](/images/TrustedCert2.png)
-![The certificate is trusted and could be validated](/images/TrustedCert3.png)The template document has the basic structure of the output required and wherever data needs to be inserted, I've added a content control with a well known name.
+The template document has the basic structure of the output required and wherever data needs to be inserted, I've added a content control with a well known name.
 
 The procedure for adding a Content Control is quite straight-forward:
 
@@ -95,3 +81,18 @@ private static void ReplaceContentControlOpenXML(WordprocessingDocument doc, str
 ```
 
 ### Signing the merged document
+To sign the document, you need a certificate and you need to use the Open Packaging Convention's facility for storing a hash based on the certificate. Wouter van Vugt did a great post about this 10 years ago and it still works great. I've linked to all the details in the [XmlSign/readme.md](/XmlSign/readme.md).
+
+I've also included a certificate I generated and used for testing, as well as a batch file you can modify to generate your own. There's a good explanation of [using the MakeCert tool](https://blog.jayway.com/2014/09/03/creating-self-signed-certificates-with-makecert-exe-for-development/#comments) from [Elizabeth Andrews](https://blog.jayway.com/author/elizabethandrews/) which I used to craft the cmd file.
+
+### Untrusted Certificates are Untrusted
+Of course, if you generate your own certificate, Word has no way to validate it. When you open the signed document, you'll see it's signed, but that the cert isn't validated:
+![The certificate is untrusted and couldn't be validated](/images/UntrustedCert1.png)
+![The certificate is untrusted and couldn't be validated](/images/UntrustedCert2.png)
+![The certificate is untrusted and couldn't be validated](/images/UntrustedCert3.png)
+
+If you Click the link to trust the user's identity, then all will be well:
+
+![The certificate is trusted and could be validated](/images/TrustedCert1.png)
+![The certificate is trusted and could be validated](/images/TrustedCert2.png)
+![The certificate is trusted and could be validated](/images/TrustedCert3.png)
