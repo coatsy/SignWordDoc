@@ -9,6 +9,12 @@ using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
 using SignWordDoc.Services;
 using SignWordDoc.Data;
+using System.Security.Cryptography.X509Certificates;
+using System.Security;
+using System.Security.Cryptography;
+using System.Security.Cryptography.Xml;
+using System.IO.Packaging;
+using System.Xml;
 
 namespace SignWordDoc
 {
@@ -25,13 +31,18 @@ namespace SignWordDoc
         const string CONTENT_CONTROL_NAME_SPECIAL_CONDITIONS = "contentSpecialConditions";
         const string CONTENT_CONTROL_NAME_EXCLUSIONS = "contentExclusions";
 
+        static readonly string RT_OfficeDocument =
+            "http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument";
+        static readonly string OfficeObjectID = "idOfficeObject";
+        static readonly string SignatureID = "idPackageSignature";
+        static readonly string ManifestHashAlgorithm = "http://www.w3.org/2000/09/xmldsig#sha1";
 
         static void Main(string[] args)
         {
-            // check that two arguments were passed
-            if (args.Length != 3)
+            // check that five arguments were passed
+            if (args.Length != 5)
             {
-                Console.WriteLine("Usage: SignWordDoc.exe <templateFileName> <policyId> <outputFileName>");
+                Console.WriteLine("Usage: SignWordDoc.exe <templateFileName> <policyId> <outputFileName> <certfile> <certPassword>");
                 Console.ReadKey();
                 return;
             }
@@ -40,6 +51,14 @@ namespace SignWordDoc
             if (! File.Exists(args[0]))
             {
                 Console.WriteLine($"TemplateFileName \"{args[0]}\" is invalid or does not exist");
+                Console.ReadKey();
+                return;
+            }
+
+            // check that the fourth argument is a file that exists
+            if (!File.Exists(args[3]))
+            {
+                Console.WriteLine($"CertificateFileName \"{args[3]}\" is invalid or does not exist");
                 Console.ReadKey();
                 return;
             }
@@ -82,6 +101,8 @@ namespace SignWordDoc
             // Replace the placeholders with the appropriate data
             var outputStream = (MemoryStream)InsertPolicyData(args[0], dataService.GetPolicy(args[1]));
 
+            // now sign the stream
+            SignPackage(outputStream, args[3], args[4]);
 
             // write the resulting file top the file system
             using (FileStream fs = new FileStream(args[2], FileMode.Create))
@@ -90,6 +111,95 @@ namespace SignWordDoc
                 outputStream.CopyTo(fs);
             }
         }
+
+        private static void SignPackage(MemoryStream outputStream, string certPath, string certPassword)
+        {
+
+            // this from Richard diZerega
+            // https://github.com/richdizz/microsoft-graph-app-only/blob/master/RichdizzReady/Program.cs
+            var certfile = System.IO.File.OpenRead(certPath);
+            var certificateBytes = new byte[certfile.Length];
+            certfile.Read(certificateBytes, 0, (int)certfile.Length);
+
+            var certificate = new X509Certificate2(
+                certificateBytes,
+                certPassword,
+                X509KeyStorageFlags.Exportable |
+                X509KeyStorageFlags.MachineKeySet |
+                X509KeyStorageFlags.PersistKeySet); //switches are important to work in webjob
+
+            var package = WordprocessingDocument.Open(outputStream, true).Package;
+
+            // This from Wouter's sample code from 10 years ago
+            List<Uri> partsToSign = new List<Uri>();
+            List<PackageRelationshipSelector> relationshipsToSign =
+                new List<PackageRelationshipSelector>();
+            List<Uri> finishedItems = new List<Uri>();
+            foreach (PackageRelationship relationship in
+                package.GetRelationshipsByType(RT_OfficeDocument))
+            {
+                AddSignableItems(relationship,
+                    partsToSign, relationshipsToSign);
+            }
+            PackageDigitalSignatureManager mgr =
+                new PackageDigitalSignatureManager(package);
+            mgr.CertificateOption = CertificateEmbeddingOption.InSignaturePart;
+
+            string signatureID = SignatureID;
+            string manifestHashAlgorithm = ManifestHashAlgorithm;
+            DataObject officeObject = CreateOfficeObject(signatureID, manifestHashAlgorithm);
+            Reference officeObjectReference = new Reference("#" + OfficeObjectID);
+            mgr.Sign(partsToSign, certificate,
+                relationshipsToSign, signatureID,
+                new DataObject[] { officeObject },
+                new Reference[] { officeObjectReference });
+
+
+
+        }
+
+        static void AddSignableItems(
+    PackageRelationship relationship,
+    List<Uri> partsToSign,
+    List<PackageRelationshipSelector> relationshipsToSign)
+        {
+            PackageRelationshipSelector selector =
+                new PackageRelationshipSelector(
+                    relationship.SourceUri,
+                    PackageRelationshipSelectorType.Id,
+                    relationship.Id);
+            relationshipsToSign.Add(selector);
+            if (relationship.TargetMode == TargetMode.Internal)
+            {
+                PackagePart part = relationship.Package.GetPart(
+                    PackUriHelper.ResolvePartUri(
+                        relationship.SourceUri, relationship.TargetUri));
+                if (partsToSign.Contains(part.Uri) == false)
+                {
+                    partsToSign.Add(part.Uri);
+                    foreach (PackageRelationship childRelationship in
+                        part.GetRelationships())
+                    {
+                        AddSignableItems(childRelationship,
+                            partsToSign, relationshipsToSign);
+                    }
+                }
+            }
+        }
+
+        static DataObject CreateOfficeObject(
+    string signatureID, string manifestHashAlgorithm)
+        {
+            XmlDocument document = new XmlDocument();
+            document.LoadXml(String.Format(Properties.Resources.OfficeObject,
+                signatureID, manifestHashAlgorithm));
+            DataObject officeObject = new DataObject();
+            // do not change the order of the following two lines
+            officeObject.LoadXml(document.DocumentElement); // resets ID
+            officeObject.Id = OfficeObjectID; // required ID, do not change
+            return officeObject;
+        }
+
 
         private static bool TemplateHasPlaceholders(WordprocessingDocument templateDocument)
         {

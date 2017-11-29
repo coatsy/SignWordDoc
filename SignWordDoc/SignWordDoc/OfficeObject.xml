@@ -1,0 +1,7 @@
+﻿<SignatureProperties xmlns="http://www.w3.org/2000/09/xmldsig#">
+  <SignatureProperty Id="idOfficeV1Details" Target="#{0}">
+    <SignatureInfoV1 xmlns="http://schemas.microsoft.com/office/2006/digsig">
+      <ManifestHashAlgorithm>{1}</ManifestHashAlgorithm>
+    </SignatureInfoV1>
+  </SignatureProperty>
+</SignatureProperties>
