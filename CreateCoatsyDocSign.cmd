@@ -2,7 +2,7 @@ REM from https://blog.jayway.com/2014/09/03/creating-self-signed-certificates-wi
 REM Run this from a VS Command Prompt so pvk2pfx.exe is in the path
 
 makecert.exe ^
--n "CN=CoatsyRootCert,O=coatsy.net,C=Australia" ^
+-n "CN=CoatsyDocSignCert,O=coatsy.net,C=Australia" ^
 -r ^
 -pe ^
 -a sha512 ^
