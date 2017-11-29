@@ -16,7 +16,7 @@ The idea of the sample is to take a data source (in this case, mocked) and gener
 
 Here's the general process the sample uses:
 
-![Architecture Diagram](/images/architecture.svg)
+![Architecture Diagram](/images/Architecture.svg)
 
 * After some basic parameter checking, the template document is merged with the data for this instance to create the document.
 * The Contents of the document are collected and a has calculated with using the X509 certificate. This hash (and some other info) is stored in the document - this is the digital signature.
