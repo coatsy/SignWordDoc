@@ -37,7 +37,7 @@ The procedure for adding a Content Control is quite straight-forward:
 
 ![Insert Content Control](/images/InsertContentControl1.png)
 
-3. This will insert a content control at the cursor. With the copntent control selected, click the Properties button:
+3. This will insert a content control at the cursor. With the content control selected, click the Properties button:
 
 ![Open Content Control Properties](/images/InsertContentControl2.png)
 
